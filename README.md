@@ -26,6 +26,6 @@ The scripts can be runned in Rstudio. The order of the scripts can be seen in th
 <img src="Data/Flowchart_SI_LI_microbiomes.png" align="center" width="700" alt="Workflow">
 </td></tr></div>
 
-<div align="center">Figure 2: Order for running the scripts </div>
+<div align="center">Figure 3: Order for running the scripts </div>
 
 
