@@ -11,7 +11,7 @@ The nutritional environment varies in the gastrointestinal tract. In the small i
 <div align="center">Figure 1: Availability of protein sources and free amino acids in different locations of the gastrointestinal tract </div>
 
 ## Workflow of the study
-The workflow of the study is displayed below. 16s sequences from two studies (Reimagine, SIBO) were mapped on genomes from the HRGM catalogue which represents microbial species found in the human gut microbiome. Auxotrophies were predicted with genome-scale metabolic modeling by comparing the microbial growth with and without the focal amino acid in the environment. The models were reconstructed with gapseq and can be found on zenodo: 10.5281/zenodo.7645465. Peptidases were predicted by scanning the translated protein sequences from the mapped nucletoide sequences of the two studies to available peptidase sequences from the MEROPS database. 
+The workflow of the study is displayed below. 16s sequences from two studies (Reimagine, SIBO) were mapped on genomes from the HRGM catalogue which represents microbial species found in the human gut microbiome. Auxotrophies were predicted with genome-scale metabolic modeling by comparing the microbial growth with and without the focal amino acid in the environment. The models were reconstructed with gapseq and can be found on zenodo: 10.5281/zenodo.5779236. Peptidases were predicted by scanning the translated protein sequences from the mapped nucletoide sequences of the two studies to available peptidase sequences from the MEROPS database. 
 
 <div align="center"><tr><td align="center" width="9999" border =  "0 px%">
 <img src="Data/Material_Method_Auxos_GI-tract.png" align="center" width="700" alt="Workflow">
