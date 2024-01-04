@@ -14,10 +14,10 @@ The nutritional environment varies in the gastrointestinal tract. In the small i
 The workflow of the study is displayed below. 16s sequences from two studies (Reimagine, SIBO) were mapped on genomes from the HRGM catalogue which represents microbial species found in the human gut microbiome. Auxotrophies were predicted with genome-scale metabolic modeling by comparing the microbial growth with and without the focal amino acid in the environment. The models were reconstructed with gapseq and can be found on zenodo: 10.5281/zenodo.7645465. Peptidases were predicted by scanning the translated protein sequences from the mapped nucletoide sequences of the two studies to available peptidase sequences from the MEROPS database. 
 
 <div align="center"><tr><td align="center" width="9999" border =  "0 px%">
-<img src="Data/12_10__Material_Method_Auxos_GI-tract.png" align="center" width="700" alt="Workflow">
+<img src="Data/Material_Method_Auxos_GI-tract.png" align="center" width="700" alt="Workflow">
 </td></tr></div>
 
-<div align="center">Figure 2: Workflow of the study,free available icons were taken from www.flaticon.com (creators: surang, Icon home Eucalyp, Kiranshastry, Becris) </div>
+<div align="center">Figure 2: Workflow of the study,free available icons were taken from www.flaticon.com (creators: photo3idea_studio, surang, Icon home Eucalyp, Kiranshastry, Becris) </div>
 
 ## Instruction for running the scripts 
 The scripts can be runned in Rstudio. The order of the scripts can be seen in the figure below. For each new analysis process, the contents of the environment should be deleted beforehand.
