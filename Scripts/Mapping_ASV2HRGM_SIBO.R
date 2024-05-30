@@ -84,3 +84,21 @@ colnames(metadata)[12] <- "Name3"
 ##create file 
 SIBO_study <- merge(metadata, test2, by.x="sample", by.y="Sample")
 
+#creating supplementary table for taxonomic information
+HRGM_info <- fread("Data/REPR_Genomes_metadata.tsv")
+
+HRGM_info[, phylum := str_match(`GTDB Taxonomy`, "p__.*;c__")[,1]]
+HRGM_info[, phylum := gsub("p__|;c__","", phylum)]
+HRGM_info[, class := str_match(`GTDB Taxonomy`, "c__.*;o__")[,1]]
+HRGM_info[, class := gsub("c__|;o__","", class)]
+HRGM_info[, order := str_match(`GTDB Taxonomy`, "o__.*;f__")[,1]]
+HRGM_info[, order := gsub("o__|;f__","", order)]
+HRGM_info[, family := str_match(`GTDB Taxonomy`, "f__.*;g__")[,1]]
+HRGM_info[, family := gsub("f__|;g__","", family)]
+HRGM_info[, genus := str_match(`GTDB Taxonomy`, "g__.*;s__")[,1]]
+HRGM_info[, genus := gsub("g__|;s__","", genus)]
+HRGM_info[, species := str_match(`GTDB Taxonomy`, "s__.*")[,1]]
+HRGM_info[, species := gsub("s__|","",species)]
+
+Supplementary_SIBO <- merge(HRGM_info, SIBO_study, by.x = "HRGM name", by.y= "Genomes")
+write_csv(Supplementary_SIBO, file = "Output/Supplementary_SIBO.csv")
