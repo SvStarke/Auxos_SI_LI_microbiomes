@@ -7,9 +7,6 @@ library(tidyverse)
 
 n.cores <- detectCores()
 cl <- makeCluster(min(n.cores-1, 3))
-cl_big <- makeCluster(n.cores - 1)
-
-min_rel_abun <- 0.001 # minimum relative abundance of species to be included in commFBA
 
 mic <- new("Microbiome",
            uniq.table.file = "Data/asv_tab.tsv",
@@ -24,22 +21,7 @@ mic <- filter_samples(mic, min.seqs = 1000, max.unclassified = 0.3)
 
 mic@model.table
 
-# featch relevant models
-models <- fetch_model_collection("/mnt/nuuk/2022/HRGM/models/",
-                                 IDs = rownames(mic@model.table[-1,]))
-
-models <- parLapply(cl_big, models,
-                    function(mod) {
-                      require(sybil)
-                      
-                      der <- deadEndMetabolites(mod)
-                      mod <- rmReact(mod, react = der$der)
-                      
-                      return(mod)
-                    })
-stopCluster(cl_big)
-
-clusterExport(cl, c("models","mic","min_rel_abun")) 
+clusterExport(cl, c("mic")) 
 
 cFBA_out <- parLapply(cl, 1:ncol(mic@model.table),
                       fun = function(i) {
@@ -51,7 +33,6 @@ cFBA_out <- parLapply(cl, 1:ncol(mic@model.table),
                         rel_models <- rel_models[rel_models != "_unclassified"]
                         rel_abun <- mic@model.table[rel_models, i]
                         rel_abun <- rel_abun/sum(rel_abun)
-                        rel_abun <- rel_abun[rel_abun >= min_rel_abun]
                         
                         return(rel_abun)
                       })
@@ -77,24 +58,6 @@ metadata <- fread("Data/Metadata.csv")
 ##create file 
 reimagine <- merge(metadata, test2, by.x="sample", by.y="Sample")
 
-#creating supplementary table for taxonomic information
-HRGM_info <- fread("Data/REPR_Genomes_metadata.tsv")
-
-HRGM_info[, phylum := str_match(`GTDB Taxonomy`, "p__.*;c__")[,1]]
-HRGM_info[, phylum := gsub("p__|;c__","", phylum)]
-HRGM_info[, class := str_match(`GTDB Taxonomy`, "c__.*;o__")[,1]]
-HRGM_info[, class := gsub("c__|;o__","", class)]
-HRGM_info[, order := str_match(`GTDB Taxonomy`, "o__.*;f__")[,1]]
-HRGM_info[, order := gsub("o__|;f__","", order)]
-HRGM_info[, family := str_match(`GTDB Taxonomy`, "f__.*;g__")[,1]]
-HRGM_info[, family := gsub("f__|;g__","", family)]
-HRGM_info[, genus := str_match(`GTDB Taxonomy`, "g__.*;s__")[,1]]
-HRGM_info[, genus := gsub("g__|;s__","", genus)]
-HRGM_info[, species := str_match(`GTDB Taxonomy`, "s__.*")[,1]]
-HRGM_info[, species := gsub("s__|","",species)]
-
-Supplementary_reimagine <- merge(HRGM_info, reimagine, by.x = "HRGM name", by.y= "Genomes")
-write_csv(Supplementary_reimagine, file = "Output/Supplementary_reimagine.csv")
 ##analazying the data
 # ##number of genomes per sample
 # data <- aggregate(reimagine$Freq, by= list(reimagine$sample, reimagine$location), FUN= function(x) {NROW(x)})

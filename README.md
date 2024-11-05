@@ -1,31 +1,90 @@
-<h1 align = "center" >Comparison of auxotrophy and peptidase profiles of the microbiota in the gastrointestinal tract </h1>
+# Comparative Analysis of Amino Acid Auxotrophies and Peptidase Profiles in Non-Dysbiotic and Dysbiotic Small Intestinal Microbiomes
+
+## Data preprocessing
+
+### What are the relative abundances of HRGM genomes?
+
+1. DADA2 workflow for ASV inference and quantification
+
+   ```sh
+   Rscript Scripts/DADA2_SIBO.R
+   Rscript Scripts/DADA2_Reimagine.R
+   ```
+
+2. Mapping of 16S sequences (i.e., ASVs) to 16S rRNA genes from HRGM genomes.
+
+   ```sh
+   Scripts/./asv_to_HRGM.sh
+   Scripts/./asv_to_HRGM_SIBO.sh
+   ```
+
+   
+
+### Which protein encoding genes in HRGM genomes putatively have extracellular proteolytic/peptidolytic activity?
+
+#### Prediction of genes with peptidolytic activity
+
+1. Get the MEROPS database files `merops_scan.lib` (fasta seqs) and `domain.sql` (SQL database with all MEROPS Codes and the info if these are peptidases or inhibitors.
+
+   https://www.ebi.ac.uk/merops/
+
+   > The file "merops_scan.lib" is a subset of pepunit.lib containing the sequences used for the MEROPS batch Blast. It contains a non-redundant library of protein sequences in FastA format of the peptidase units for all the family type examples and peptidase/inhibitor holotypes. The library can be searched by use of FastA without further modification, but must be converted and indexed for BLAST searches. (Description from the MEROPS website).
+
+1. Filter `domain.sql` to get a data table with only peptidases and omitting inhibitors
+
+   ```sh
+   Rscript Scripts/n_prepare_MeropsDomainTable.R
+   ```
+
+2. Filter MEROPS Database "Scan Sequences" (=non-redundant library of protein sequences in FastA format of the peptidase units for all the <u>family type examples</u> and peptidase/inhibitor holotypes) and retain all sequences that are listed in the table `Data/domain2.csv.gz`, which is an output of (2).
+
+   ```sh
+   Rscript Scripts/n_filterMeropsScanSeqs.R
+   ```
+
+3. Search for HRGM genes with putative peptidase activity. 
+
+   ```sh
+   makeblastdb -in merops_scan_filt.lib -dbtype prot
+   blastp -query combined.faa -db merops_scan_filt.lib -evalue 0.01 -num_threads 12 -outfmt 6 > merops_HRGM.m8
+   gzip merops_HRGM.m8
+   ```
+
+   where the file `merops_scan_filt.lib` is an output of (3), the file `combined.faa` is a fasta file with all protein sequences of all HRGM genomes.
+
+#### Prediction of putative peptidases with extracellular catalytic activity
+
+All protein-coding genes were processed with SignalP-6.0 using the following script/call, to predict signal peptides that control protein secretion and translocation.
+
+```sh
+#!/bin/bash
+
+signalp6 --fastafile $sample.faa --organism other --output_dir $sample --format txt --mode fast --model_dir signalp-6-package/models/
+```
+
+In this script, the variable `$sample ` is the respective HRGM genome ID e.g.: "HRGM_Genome_0003".
 
 
 
-## Project idea
-The nutritional environment varies in the gastrointestinal tract. In the small intestine, protein digestion takes place and broken-down amino acids are absorbed. Therefore, the dietary proteinaceous environment is rather poor for the microbiome in the large intestine. However, there are other protein sources such as enzymes of bacterial and human origin which could display especially a protein source for the microbiome residing in lower parts of the gastrointestinal tract (Figure 1). Proteins display a vital nutrient source for bacteria because amino acids are needed for the biosynthesis of cellular proteins. Prototrophic bacteria are able for the de novo biosynthesis of amino acids but auxotrophic bacteria are not and rely therefore on their nutritional environment. Previously we predicted auxotrophy frequencies in the large intestinal microbiota and found auxotrophies in higher freqencies esepcially for human essential amino acids. In addition, we found a positive association between auxotrophy frequencies and the diversity as well as long-term stability (https://doi.org/10.1101/2023.03.23.532984). The objective of this study is therefore to compare auxotrophy frequencies of the microbiota from the small intestine and large intestine. Because the microbial proteolytic activity in the human gut could lead to a higher availability of amino acids in the environment, we predicted the peptidase profile and statistically examined the relationship between the frequencies of peptidases and auxotrophies. Further, the auxotrophy and peptidase profiles are determined in dysbiosis state of the small intestine (SIBO).
-
-<div align="center"><tr><td align="center" width="9999" border =  "0 px%">
-<img src="Data/GI_tract.png" align="center" width="500" alt="Amino acid availability">
-</td></tr></div>
-<div align="center">Figure 1: Availability of protein sources and free amino acids in different locations of the gastrointestinal tract </div>
-
-## Workflow of the study
-The workflow of the study is displayed below. 16s sequences from two studies (Reimagine, SIBO) were mapped on genomes from the HRGM catalogue which represents microbial species found in the human gut microbiome. Auxotrophies were predicted with genome-scale metabolic modeling by comparing the microbial growth with and without the focal amino acid in the environment. The models were reconstructed with gapseq and can be found on zenodo: 10.5281/zenodo.5779236. Peptidases were predicted by scanning the translated protein sequences from the mapped nucletoide sequences of the two studies to available peptidase sequences from the MEROPS database. 
-
-<div align="center"><tr><td align="center" width="9999" border =  "0 px%">
-<img src="Data/Material_Method_Auxos_GI-tract.png" align="center" width="700" alt="Workflow">
-</td></tr></div>
-
-<div align="center">Figure 2: Workflow of the study,free available icons were taken from www.flaticon.com (creators: photo3idea_studio, surang, Icon home Eucalyp, Kiranshastry, Becris) </div>
-
-## Instruction for running the scripts 
-The scripts can be runned in Rstudio. The order of the scripts can be seen in the figure below. For each new analysis process, the contents of the environment should be deleted beforehand.
-
-<div align="center"><tr><td align="center" width="9999" border =  "0 px%">
-<img src="Data/Flowchart_SI_LI_microbiomes.png" align="center" width="700" alt="Workflow">
-</td></tr></div>
-
-<div align="center">Figure 3: Order for running the scripts </div>
+Finally, per genome, the intersect between sequences with a signal peptide for secretion/translocation and the sequences with putative peptidolytic activity were determined. Only those sequences (putatively extracellular & putativly peptidolytic activity) were considered in all following analysis (below).
 
 
+## Final data analysis and visualisation
+
+#### Initialize all required data in R
+
+```R
+source("n_initData.R")
+```
+
+#### Analyse REIMAGE cohort data
+
+```R
+source("n_reimagine.R")
+```
+
+#### Analyse SIBO cohort data
+
+```R
+source("n_sibo.R")
+```
