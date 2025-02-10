@@ -152,6 +152,7 @@ dt_pepd <- merge(dt_pepd, db_meta_reim, by = "sample")
 dt_pepd <- dt_pepd[location %in% c("SI-Duodenum","LI (Stool)")]
 patPairs <- dt_pepd[!duplicated(sample)][,.N,by= PatNo][N == 2, PatNo]
 dt_pepd <- dt_pepd[PatNo %in% patPairs][order(location, PatNo)]
+
 statpep <- list()
 for(pepi in unique(dt_pepd$code)) {
   
@@ -186,6 +187,13 @@ statpep[LImedian < SImedian, effsize := -effsize]
 statpep[LImedian == 0 & SImedian == 0 & LImean < SImean, effsize := -effsize]
 statpep[, xmin := min(0,effsize), by = code]
 statpep[, xmax := max(0,effsize), by = code]
+statpep[!is.na(padj), log2FC := log2(SImedian/LImedian)]
+statpep[, family2 := gsub("\\..*$","",code)]
+
+# Specific peptidases that are either significant signatures of the LI or SI (duodenum)
+LISIpeps <- statpep[(SImedian >= 0.01 | LImedian >= 0.01) & padj <= 0.001][order(log2FC,p), .(code, main_class = family, family = family2, p, padj, SImedian, LImedian, log2FC)]
+fwrite(LISIpeps, "Output/n_reimPepLISI.tsv", sep = "\t", quote = FALSE)
+LISIpeps[, table(log2FC > 0, family)]
 
 p_reimPep2 <- ggplot(statpep, aes(effsize, code, col = family, fill = padj < 0.05)) +
   geom_pointrange(aes(xmin = xmin, xmax = xmax),
@@ -420,4 +428,3 @@ p_reimAuxPep <- ggplot(AuxPepCor[aa %in% aakeep & code %in% pepkeep],
 
 export_plot(p_reimAuxPep, "Output/p_reimAuxPep", width = 10, height = 8.6)
 fwrite(AuxPepCor, "Output/p_reimAuxPep.tsv", sep = "\t", quote = FALSE)
-

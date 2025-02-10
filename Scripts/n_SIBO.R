@@ -7,6 +7,7 @@
 # get realtive abundance of auxotrophies
 tmpaux <- auxos[rownames(abun_sibo_rel),]
 tmpaux <- t(abun_sibo_rel) %*% tmpaux
+auxtab_sibo <- tmpaux # for later SIBO x Reimagine analysis
 
 dtaux <- data.table(as.table(tmpaux))
 setnames(dtaux, c("sample","aa","freq"))
@@ -324,7 +325,7 @@ p_siboAvgPep <- ggplot(avgpep, aes(SIBO, avgNrPep, fill = SIBO)) +
                      tip.length = 0, method='wilcox.test') +
   labs(x = "SIBO")
 
-export_plot(p_siboAvgPep, "Output/p_siboPepdidasesAvg", width = 4.2, height = 4.8)
+export_plot(p_reimAvgPep, "Output/p_siboPepdidasesAvg", width = 4.2, height = 4.8)
 fwrite(avgpep[,.(sample, SIBO, avgNrPep)],
        "Output/p_siboPepdidasesAvg.tsv", sep = "\t", quote = FALSE)
 
